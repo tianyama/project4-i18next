@@ -1,10 +1,24 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+export interface ToDoTypes {
+  id: string;
+  text: string;
+  status: boolean;
+  priority: number;
+}
+
+export interface CounterState {
+  value: ToDoTypes[]
+}
+
+// Define the initial state using that type
+const initialState: CounterState = {
+  value: []
+}
+
 export const toDoSlice = createSlice({
   name: "toDoList",
-  initialState: {
-    value: [],
-  },
+  initialState,
   reducers: {
     addList: ({ value }, { payload }) => {
       value.push(payload);
