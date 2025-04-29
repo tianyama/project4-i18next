@@ -3,8 +3,8 @@ import { useAppSelector } from "./lib/hook";
 import "./App.css";
 
 import { useTranslation } from "react-i18next";
-import { Button, Input, Layout, Radio, Select } from "antd";
-import { statusList } from "./lib/arr";
+import { Button, Input, Layout, Radio, Select, Space } from "antd";
+import { statusList, sortByList, sortOrder } from "./lib/arr";
 import EditDialog from "./components/EditDialog";
 import AddNewToDo from "./components/AddNewToDo";
 import { SelectProps } from "./components/PriorityTags";
@@ -18,6 +18,8 @@ export default function App() {
   const [filterText, setFilterText] = useState("");
   const [filterStatus, setFilterStatus] = useState(null);
   const [filterPriority, setFilterPriority] = useState<number[]>([]);
+  const [sort, setSort] = useState("text");
+  const [order, setOrder] = useState(false);
   const toDoList = useAppSelector(({ toDo }) => toDo.value);
   const filterList = toDoList.filter(
     ({ text, priority, status }) =>
@@ -26,7 +28,13 @@ export default function App() {
         : true) &&
       (filterPriority.length ? filterPriority.includes(priority) : true) &&
       (filterStatus !== null ? status === filterStatus : true)
-  );
+  ).sort((a, b) => {
+    if (sort === "text") return a.text.localeCompare(b.text);
+    else if (sort === "status") return Number(a.status) - Number(b.status);
+    else if (sort === "priority") return a.priority - b.priority;
+    else return 0;
+  })
+  if (order) filterList.reverse();
   return (
     <Layout>
       <Content style={{ padding: "0 50px", backgroundColor: "white" }}>
@@ -48,6 +56,7 @@ export default function App() {
         <Input.Search onSearch={(e) => setFilterText(e)} />
         <h4>{t("FilterStatus")}</h4>
         <Radio.Group
+          block
           defaultValue={null}
           onChange={(e) => setFilterStatus(e.target.value)}
           options={statusList.map(({ value, label }) => ({
@@ -63,6 +72,28 @@ export default function App() {
           {...SelectProps}
           onChange={(e) => setFilterPriority(e)}
         />
+        <h4>{t("SortBy")}</h4>
+        <Space.Compact block>
+          <Select
+            style={{ width: "50%" }}
+            options={sortByList.map(({ value, label }) => ({
+              label: t(label),
+              value,
+            }))}
+            onChange={(v) => setSort(v)}
+          />
+          <Radio.Group
+            block
+            style={{ width: "50%" }}
+            optionType="button"
+            defaultValue={null}
+            onChange={(e) => setOrder(e.target.value)}
+            options={sortOrder.map(({ value, label }) => ({
+              label: t(label),
+              value,
+            }))}
+          />
+        </Space.Compact>
         <ListToDo list={filterList} setCurrent={setCurrent} />
         <AddNewToDo />
         <EditDialog current={current} setCurrent={setCurrent} />
